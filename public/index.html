@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FiveM Lookup</title>
+</head>
+
+<body style="font-family:Arial;background:#111;color:white;text-align:center;">
+
+<h1>🔎 FiveM Cheater Lookup</h1>
+
+<input id="id" placeholder="Discord ID"><br><br>
+
+<select id="status">
+  <option value="clean">Clean</option>
+  <option value="sus">Sus</option>
+  <option value="banned">Banned</option>
+</select><br><br>
+
+<input id="note" placeholder="Note"><br><br>
+
+<button onclick="save()">Gem</button>
+<button onclick="search()">Søg</button>
+
+<div id="out"></div>
+
+<script>
+async function save(){
+  let id = document.getElementById("id").value;
+
+  await fetch("/api/user/" + id, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      status: document.getElementById("status").value,
+      note: document.getElementById("note").value
+    })
+  });
+
+  alert("Gemt!");
+}
+
+async function search(){
+  let id = document.getElementById("id").value;
+
+  let res = await fetch("/api/user/" + id);
+  let data = await res.json();
+
+  document.getElementById("out").innerHTML =
+    data
+      ? `<p>Status: ${data.status}</p><p>Note: ${data.note}</p>`
+      : "Ikke fundet";
+}
+</script>
+
+</body>
+</html>
