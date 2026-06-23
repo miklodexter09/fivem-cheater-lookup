@@ -6,29 +6,37 @@
 
 <style>
 body{
+    margin:0;
     background:#000;
     color:white;
     font-family:Arial,sans-serif;
     text-align:center;
-    margin:0;
-    padding-top:40px;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+    padding:30px;
 }
 
 .logo{
-    width:180px;
-    margin-bottom:20px;
+    width:140px;
+    margin-bottom:15px;
 }
 
 h1{
     color:red;
-    font-size:48px;
+    font-size:50px;
+    margin-bottom:20px;
 }
 
-input{
-    width:300px;
+input, select{
+    width:100%;
     padding:12px;
-    border-radius:8px;
+    margin:8px 0;
     border:none;
+    border-radius:8px;
+    font-size:16px;
 }
 
 button{
@@ -36,6 +44,13 @@ button{
     border:none;
     border-radius:8px;
     cursor:pointer;
+    font-size:16px;
+    margin:5px;
+}
+
+.save{
+    background:green;
+    color:white;
 }
 
 .search{
@@ -46,31 +61,116 @@ button{
 .discord{
     display:inline-block;
     margin-top:20px;
-    padding:12px 25px;
     background:#5865F2;
     color:white;
     text-decoration:none;
-    border-radius:8px;
+    padding:12px 25px;
+    border-radius:10px;
+}
+
+.result{
+    margin-top:25px;
+    background:#111;
+    padding:20px;
+    border-radius:10px;
 }
 </style>
 </head>
-
 <body>
+
+<div class="container">
 
 <img src="logo.png" class="logo">
 
 <h1>FIVEM CHEATER LOOKUP</h1>
 
-<p>Report FiveM cheaters and help keep servers clean.</p>
+<input id="discordId" placeholder="Discord ID">
 
-<input type="text" placeholder="Enter FiveM ID">
-<button class="search">Search</button>
+<select id="status">
+<option>Clean</option>
+<option>Sus</option>
+<option>Exposed</option>
+<option>Banned</option>
+</select>
 
-<br><br>
+<input id="note" placeholder="Note">
 
-<a class="discord" href="https://discord.gg/tFQAryybR8" target="_blank">
+<input id="evidence" placeholder="Evidence Link">
+
+<input id="adminKey" type="password" placeholder="Admin Key">
+
+<button class="save" onclick="saveUser()">Save</button>
+<button class="search" onclick="searchUser()">Search</button>
+
+<br>
+
+<a class="discord"
+href="https://discord.gg/tFQAryybR8"
+target="_blank">
 Join Discord
 </a>
+
+<div id="result" class="result"></div>
+
+</div>
+
+<script>
+
+const ADMIN_KEY = "Miklo2025";
+
+async function saveUser(){
+
+const key = document.getElementById("adminKey").value;
+
+if(key !== ADMIN_KEY){
+alert("Forkert Admin Key");
+return;
+}
+
+const id = document.getElementById("discordId").value;
+
+const data = {
+status: document.getElementById("status").value,
+note: document.getElementById("note").value,
+evidence: document.getElementById("evidence").value
+};
+
+await fetch("/api/user/"+id,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(data)
+});
+
+alert("Gemt");
+}
+
+async function searchUser(){
+
+const id = document.getElementById("discordId").value;
+
+const res = await fetch("/api/user/"+id);
+
+const data = await res.json();
+
+if(!data){
+document.getElementById("result").innerHTML =
+"<h2>Ingen data fundet</h2>";
+return;
+}
+
+document.getElementById("result").innerHTML = `
+<h2>Status: ${data.status}</h2>
+<p><b>Note:</b> ${data.note}</p>
+<p><b>Evidence:</b>
+<a href="${data.evidence}" target="_blank">
+Link
+</a>
+</p>
+`;
+}
+</script>
 
 </body>
 </html>
