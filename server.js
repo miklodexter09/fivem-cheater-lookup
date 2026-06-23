@@ -6,6 +6,7 @@ app.use(express.json());
 app.use(express.static("public"));
 
 const DB_FILE = "./db.json";
+const ADMIN_KEY = "MikeOwner2026";
 
 if (!fs.existsSync(DB_FILE)) {
   fs.writeFileSync(DB_FILE, "{}");
@@ -25,11 +26,18 @@ app.get("/api/user/:id", (req, res) => {
 });
 
 app.post("/api/user/:id", (req, res) => {
+  const adminKey = req.headers["admin-key"];
+
+  if (adminKey !== ADMIN_KEY) {
+    return res.status(403).send("No access");
+  }
+
   const db = readDb();
 
   db[req.params.id] = {
     status: req.body.status,
-    note: req.body.note || ""
+    note: req.body.note || "",
+    evidence: req.body.evidence || ""
   };
 
   writeDb(db);
