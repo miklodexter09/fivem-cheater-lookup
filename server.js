@@ -1,41 +1,43 @@
 const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
-
+const fs = require("fs");
 const app = express();
+
 app.use(express.json());
 app.use(express.static("public"));
 
-const db = new sqlite3.Database("./db.db");
+const DB_FILE = "./db.json";
 
-// Lav database
-db.run(`
-CREATE TABLE IF NOT EXISTS users (
-  id TEXT PRIMARY KEY,
-  status TEXT,
-  note TEXT
-)
-`);
+if (!fs.existsSync(DB_FILE)) {
+  fs.writeFileSync(DB_FILE, "{}");
+}
 
-// Hent bruger
+function readDb() {
+  return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
+}
+
+function writeDb(data) {
+  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+}
+
 app.get("/api/user/:id", (req, res) => {
-  db.get("SELECT * FROM users WHERE id = ?", [req.params.id], (err, row) => {
-    res.json(row || null);
-  });
+  const db = readDb();
+  res.json(db[req.params.id] || null);
 });
 
-// Gem bruger
 app.post("/api/user/:id", (req, res) => {
-  const { status, note } = req.body;
+  const db = readDb();
 
-  db.run(`
-    INSERT INTO users (id, status, note)
-    VALUES (?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET status=?, note=?
-  `, [req.params.id, status, note, status, note]);
+  db[req.params.id] = {
+    status: req.body.status,
+    note: req.body.note || ""
+  };
 
+  writeDb(db);
   res.send("OK");
 });
 
-app.listen(3000, () => {
-  console.log("Server kører på http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Server kører på port " + PORT);
 });
