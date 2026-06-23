@@ -3,166 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FiveM Cheater Lookup</title>
+<title>Miklo Lookup</title>
 
 <style>
 body{
-    background:url("logo.png") no-repeat center center fixed;
-    background-size:cover;
-    color:white;
+    margin:0;
     font-family:Arial,sans-serif;
+    color:white;
     text-align:center;
-    padding:30px;
+
+    background-image:url("logo.png");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
 }
 
-.container{
-    max-width:700px;
-    margin:auto;
-    background:rgba(0,0,0,0.85);
-    padding:25px;
-    border-radius:15px;
+.overlay{
+    background:rgba(0,0,0,0.7);
+    min-height:100vh;
+    padding:50px;
 }
 
-input,select{
-    width:100%;
+h1{
+    font-size:60px;
+    color:#ff0000;
+}
+
+input{
     padding:12px;
-    margin:8px 0;
+    width:300px;
     border:none;
     border-radius:8px;
 }
 
 button{
-    background:#5865F2;
-    color:white;
-    border:none;
     padding:12px 20px;
+    border:none;
     border-radius:8px;
+    background:red;
+    color:white;
     cursor:pointer;
-    margin:5px;
 }
 
-.discord-btn{
+.discord{
     display:inline-block;
+    margin-top:20px;
+    padding:15px 25px;
     background:#5865F2;
     color:white;
-    padding:15px 25px;
-    border-radius:10px;
     text-decoration:none;
-    font-size:20px;
-    font-weight:bold;
-    margin:15px;
-}
-
-.card{
-    background:#1b1b1b;
-    padding:20px;
     border-radius:10px;
-    margin-top:20px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="overlay">
 
-<img src="logo.png" width="220">
+<h1>MIKLO LOOKUP</h1>
 
-<h1>🔎 FiveM Cheater Lookup</h1>
+<p>Rapporter FiveM cheaters her</p>
 
-<p>
-Find kendte cheaters og hjælp med at holde FiveM communities sikre.
-</p>
+<input type="text" placeholder="FiveM ID">
+<button>Søg</button>
 
-<a class="discord-btn"
+<br><br>
+
+<a class="discord"
 href="https://discord.gg/tFQAryybR8"
 target="_blank">
-🚨 Report en Cheater på Discord
+Join Discord
 </a>
 
-<div class="card">
-
-<h2>Lookup</h2>
-
-<input id="id" placeholder="Discord ID">
-
-<select id="status">
-<option value="clean">Clean</option>
-<option value="sus">Sus</option>
-<option value="exposed">Exposed</option>
-<option value="banned">Banned</option>
-</select>
-
-<input id="note" placeholder="Note">
-
-<input id="evidence" placeholder="Bevis link">
-
-<input id="key" placeholder="Admin Key">
-
-<button onclick="save()">Gem / Update</button>
-<button onclick="search()">Søg</button>
-
 </div>
-
-<div id="out"></div>
-
-</div>
-
-<script>
-
-async function save(){
-
-let id=document.getElementById("id").value;
-let key=document.getElementById("key").value;
-
-let res=await fetch("/api/user/"+id,{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-"admin-key":key
-},
-body:JSON.stringify({
-status:document.getElementById("status").value,
-note:document.getElementById("note").value,
-evidence:document.getElementById("evidence").value
-})
-});
-
-if(res.status===403){
-alert("Forkert admin key");
-return;
-}
-
-alert("Gemt!");
-}
-
-async function search(){
-
-let id=document.getElementById("id").value;
-
-let res=await fetch("/api/user/"+id);
-
-let data=await res.json();
-
-document.getElementById("out").innerHTML=data?`
-<div class="card">
-<h2>${id}</h2>
-<p><b>Status:</b> ${data.status}</p>
-<p><b>Note:</b> ${data.note || "Ingen note"}</p>
-<p><b>Evidence:</b> ${
-data.evidence
-? `<a href="${data.evidence}" target="_blank">Åbn bevis</a>`
-: "Ingen"
-}</p>
-</div>
-`:`
-<div class="card">
-<h2>Ikke fundet</h2>
-</div>
-`;
-}
-
-</script>
 
 </body>
 </html>
