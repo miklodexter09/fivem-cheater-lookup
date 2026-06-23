@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>FiveM Lookup</title>
+  <title>FiveM Cheater Lookup</title>
 </head>
-
-<body style="font-family:Arial;background:#111;color:white;text-align:center;">
+<body style="font-family:Arial;background:#111;color:white;text-align:center;padding:40px;">
 
 <h1>🔎 FiveM Cheater Lookup</h1>
 
@@ -13,28 +12,41 @@
 <select id="status">
   <option value="clean">Clean</option>
   <option value="sus">Sus</option>
+  <option value="exposed">Exposed</option>
   <option value="banned">Banned</option>
 </select><br><br>
 
 <input id="note" placeholder="Note"><br><br>
+<input id="evidence" placeholder="Evidence link"><br><br>
+<input id="key" placeholder="Admin key"><br><br>
 
-<button onclick="save()">Gem</button>
+<button onclick="save()">Gem / Update</button>
 <button onclick="search()">Søg</button>
 
-<div id="out"></div>
+<div id="out" style="margin-top:30px;"></div>
 
 <script>
 async function save(){
   let id = document.getElementById("id").value;
+  let key = document.getElementById("key").value;
 
-  await fetch("/api/user/" + id, {
+  let res = await fetch("/api/user/" + id, {
     method:"POST",
-    headers:{ "Content-Type":"application/json" },
+    headers:{
+      "Content-Type":"application/json",
+      "admin-key": key
+    },
     body: JSON.stringify({
       status: document.getElementById("status").value,
-      note: document.getElementById("note").value
+      note: document.getElementById("note").value,
+      evidence: document.getElementById("evidence").value
     })
   });
+
+  if (res.status === 403) {
+    alert("Forkert admin key");
+    return;
+  }
 
   alert("Gemt!");
 }
@@ -47,8 +59,11 @@ async function search(){
 
   document.getElementById("out").innerHTML =
     data
-      ? `<p>Status: ${data.status}</p><p>Note: ${data.note}</p>`
-      : "Ikke fundet";
+      ? `<h2>${id}</h2>
+         <p>Status: ${data.status.toUpperCase()}</p>
+         <p>Note: ${data.note || "Ingen note"}</p>
+         <p>Evidence: ${data.evidence ? `<a href="${data.evidence}" target="_blank">Åbn bevis</a>` : "Ingen"}</p>`
+      : "<h3>Ikke fundet</h3>";
 }
 </script>
 
