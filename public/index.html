@@ -7,9 +7,10 @@
 
 <style>
 body{
-    background:#0f0f0f;
+    background:url("logo.png") no-repeat center center fixed;
+    background-size:cover;
     color:white;
-    font-family:Arial, sans-serif;
+    font-family:Arial,sans-serif;
     text-align:center;
     padding:30px;
 }
@@ -17,9 +18,12 @@ body{
 .container{
     max-width:700px;
     margin:auto;
+    background:rgba(0,0,0,0.85);
+    padding:25px;
+    border-radius:15px;
 }
 
-input, select{
+input,select{
     width:100%;
     padding:12px;
     margin:8px 0;
@@ -37,10 +41,6 @@ button{
     margin:5px;
 }
 
-button:hover{
-    opacity:0.9;
-}
-
 .discord-btn{
     display:inline-block;
     background:#5865F2;
@@ -48,6 +48,7 @@ button:hover{
     padding:15px 25px;
     border-radius:10px;
     text-decoration:none;
+    font-size:20px;
     font-weight:bold;
     margin:15px;
 }
@@ -59,17 +60,18 @@ button:hover{
     margin-top:20px;
 }
 </style>
-
 </head>
 
 <body>
 
 <div class="container">
 
+<img src="logo.png" width="220">
+
 <h1>🔎 FiveM Cheater Lookup</h1>
 
 <p>
-Find kendte cheaters, report mistænkelige spillere og hjælp med at holde FiveM communities rene.
+Find kendte cheaters og hjælp med at holde FiveM communities sikre.
 </p>
 
 <a class="discord-btn"
@@ -110,11 +112,10 @@ target="_blank">
 
 async function save(){
 
-let id = document.getElementById("id").value;
+let id=document.getElementById("id").value;
+let key=document.getElementById("key").value;
 
-let key = document.getElementById("key").value;
-
-let res = await fetch("/api/user/" + id,{
+let res=await fetch("/api/user/"+id,{
 method:"POST",
 headers:{
 "Content-Type":"application/json",
@@ -127,46 +128,38 @@ evidence:document.getElementById("evidence").value
 })
 });
 
-if(res.status === 403){
+if(res.status===403){
 alert("Forkert admin key");
 return;
 }
 
 alert("Gemt!");
-
 }
 
 async function search(){
 
-let id = document.getElementById("id").value;
+let id=document.getElementById("id").value;
 
-let res = await fetch("/api/user/" + id);
+let res=await fetch("/api/user/"+id);
 
-let data = await res.json();
+let data=await res.json();
 
-document.getElementById("out").innerHTML =
-data
-?
-`
+document.getElementById("out").innerHTML=data?`
 <div class="card">
 <h2>${id}</h2>
 <p><b>Status:</b> ${data.status}</p>
 <p><b>Note:</b> ${data.note || "Ingen note"}</p>
-<p>
-<b>Evidence:</b>
-${data.evidence
+<p><b>Evidence:</b> ${
+data.evidence
 ? `<a href="${data.evidence}" target="_blank">Åbn bevis</a>`
-: "Ingen"}
-</p>
+: "Ingen"
+}</p>
 </div>
-`
-:
-`
+`:`
 <div class="card">
 <h2>Ikke fundet</h2>
 </div>
 `;
-
 }
 
 </script>
