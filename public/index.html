@@ -3,172 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <title>FiveM Cheater Lookup</title>
-
 <style>
-body{
-    margin:0;
-    background:#000;
-    color:white;
-    font-family:Arial,sans-serif;
-    text-align:center;
-}
-
-.container{
-    max-width:700px;
-    margin:auto;
-    padding:30px;
-}
-
-.logo{
-    width:140px;
-    margin-bottom:15px;
-}
-
-h1{
-    color:red;
-    font-size:50px;
-    margin-bottom:20px;
-}
-
-input, select{
-    width:100%;
-    padding:12px;
-    margin:8px 0;
-    border:none;
-    border-radius:8px;
-    font-size:16px;
-}
-
-button{
-    padding:12px 20px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:16px;
-    margin:5px;
-}
-
-.save{
-    background:green;
-    color:white;
-}
-
-.search{
-    background:red;
-    color:white;
-}
-
-.discord{
-    display:inline-block;
-    margin-top:20px;
-    background:#5865F2;
-    color:white;
-    text-decoration:none;
-    padding:12px 25px;
-    border-radius:10px;
-}
-
-.result{
-    margin-top:25px;
-    background:#111;
-    padding:20px;
-    border-radius:10px;
-}
+body{margin:0;background:#000;color:white;font-family:Arial;text-align:center}
+.container{max-width:700px;margin:auto;padding:30px}
+.logo{width:140px;margin-bottom:15px}
+h1{color:red;font-size:45px}
+input,select{width:100%;padding:12px;margin:8px 0;border:none;border-radius:8px}
+button{padding:12px 20px;border:none;border-radius:8px;margin:5px;cursor:pointer}
+.save{background:green;color:white}
+.search{background:red;color:white}
+.discord{display:inline-block;margin-top:20px;background:#5865F2;color:white;text-decoration:none;padding:12px 25px;border-radius:10px}
+.result{margin-top:25px;background:#111;padding:20px;border-radius:10px}
+a{color:#5865F2}
 </style>
 </head>
 <body>
 
 <div class="container">
-
 <img src="logo.png" class="logo">
 
 <h1>FIVEM CHEATER LOOKUP</h1>
 
-<input id="discordId" placeholder="Discord ID">
+<input id="id" placeholder="Discord ID">
 
 <select id="status">
-<option>Clean</option>
-<option>Sus</option>
-<option>Exposed</option>
-<option>Banned</option>
+<option value="clean">Clean</option>
+<option value="sus">Sus</option>
+<option value="exposed">Exposed</option>
+<option value="banned">Banned</option>
 </select>
 
 <input id="note" placeholder="Note">
-
 <input id="evidence" placeholder="Evidence Link">
+<input id="key" type="password" placeholder="Admin Key">
 
-<input id="adminKey" type="password" placeholder="Admin Key">
-
-<button class="save" onclick="saveUser()">Save</button>
-<button class="search" onclick="searchUser()">Search</button>
+<button class="save" onclick="save()">Gem / Update</button>
+<button class="search" onclick="search()">Søg</button>
 
 <br>
 
-<a class="discord"
-href="https://discord.gg/tFQAryybR8"
-target="_blank">
-Join Discord
+<a class="discord" href="https://discord.gg/tFQAryybR8" target="_blank">
+🚨 Join Discord
 </a>
 
-<div id="result" class="result"></div>
-
+<div id="out" class="result"></div>
 </div>
 
 <script>
+async function save(){
+  let id = document.getElementById("id").value;
+  let key = document.getElementById("key").value;
 
-const ADMIN_KEY = "Miklo2025";
+  if(!id){
+    alert("Indtast Discord ID");
+    return;
+  }
 
-async function saveUser(){
+  let res = await fetch("/api/user/" + id, {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "admin-key": key
+    },
+    body: JSON.stringify({
+      status: document.getElementById("status").value,
+      note: document.getElementById("note").value,
+      evidence: document.getElementById("evidence").value
+    })
+  });
 
-const key = document.getElementById("adminKey").value;
+  if(res.status === 403){
+    alert("Forkert admin key");
+    return;
+  }
 
-if(key !== ADMIN_KEY){
-alert("Forkert Admin Key");
-return;
+  alert("Gemt!");
 }
 
-const id = document.getElementById("discordId").value;
+async function search(){
+  let id = document.getElementById("id").value;
 
-const data = {
-status: document.getElementById("status").value,
-note: document.getElementById("note").value,
-evidence: document.getElementById("evidence").value
-};
+  if(!id){
+    alert("Indtast Discord ID");
+    return;
+  }
 
-await fetch("/api/user/"+id,{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify(data)
-});
+  let res = await fetch("/api/user/" + id);
+  let data = await res.json();
 
-alert("Gemt");
-}
+  if(!data){
+    document.getElementById("out").innerHTML = "<h2>Ikke fundet</h2>";
+    return;
+  }
 
-async function searchUser(){
-
-const id = document.getElementById("discordId").value;
-
-const res = await fetch("/api/user/"+id);
-
-const data = await res.json();
-
-if(!data){
-document.getElementById("result").innerHTML =
-"<h2>Ingen data fundet</h2>";
-return;
-}
-
-document.getElementById("result").innerHTML = `
-<h2>Status: ${data.status}</h2>
-<p><b>Note:</b> ${data.note}</p>
-<p><b>Evidence:</b>
-<a href="${data.evidence}" target="_blank">
-Link
-</a>
-</p>
-`;
+  document.getElementById("out").innerHTML = `
+    <h2>${id}</h2>
+    <p><b>Status:</b> ${data.status}</p>
+    <p><b>Note:</b> ${data.note || "Ingen note"}</p>
+    <p><b>Evidence:</b> ${
+      data.evidence
+      ? `<a href="${data.evidence}" target="_blank">Åbn bevis</a>`
+      : "Ingen"
+    }</p>
+  `;
 }
 </script>
 
