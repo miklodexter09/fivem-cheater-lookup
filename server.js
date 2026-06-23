@@ -6,7 +6,7 @@ app.use(express.json());
 app.use(express.static("public"));
 
 const DB_FILE = "./db.json";
-const ADMIN_KEY = "MikeOwner2026";
+const ADMIN_KEY = "Miklo";
 
 if (!fs.existsSync(DB_FILE)) {
   fs.writeFileSync(DB_FILE, "{}");
