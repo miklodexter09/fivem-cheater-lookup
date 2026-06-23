@@ -1,46 +1,68 @@
 const express = require("express");
-const fs = require("fs");
+const { createClient } = require("@supabase/supabase-js");
+
 const app = express();
 
 app.use(express.json());
 app.use(express.static("public"));
 
-const DB_FILE = "./db.json";
-const ADMIN_KEY = "Miklo";
+const ADMIN_KEY = process.env.ADMIN_KEY || "Miklo2025";
 
-if (!fs.existsSync(DB_FILE)) {
-  fs.writeFileSync(DB_FILE, "{}");
-}
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
 
-function readDb() {
-  return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
-}
+app.get("/api/user/:id", async (req, res) => {
+  const id = req.params.id;
 
-function writeDb(data) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
-}
+  const { data, error } = await supabase
+    .from("cheaters")
+    .select("*")
+    .eq("discord_id", id)
+    .maybeSingle();
 
-app.get("/api/user/:id", (req, res) => {
-  const db = readDb();
-  res.json(db[req.params.id] || null);
+  if (error) {
+    console.error(error);
+    return res.status(500).send("Database error");
+  }
+
+  if (!data) {
+    return res.json(null);
+  }
+
+  res.json({
+    status: data.status,
+    note: data.note,
+    evidence: data.evidence
+  });
 });
 
-app.post("/api/user/:id", (req, res) => {
+app.post("/api/user/:id", async (req, res) => {
   const adminKey = req.headers["admin-key"];
 
   if (adminKey !== ADMIN_KEY) {
     return res.status(403).send("No access");
   }
 
-  const db = readDb();
+  const id = req.params.id;
+  const { status, note, evidence } = req.body;
 
-  db[req.params.id] = {
-    status: req.body.status,
-    note: req.body.note || "",
-    evidence: req.body.evidence || ""
-  };
+  const { error } = await supabase
+    .from("cheaters")
+    .upsert({
+      discord_id: id,
+      status: status || "sus",
+      note: note || "",
+      evidence: evidence || "",
+      updated_at: new Date()
+    });
 
-  writeDb(db);
+  if (error) {
+    console.error(error);
+    return res.status(500).send("Database error");
+  }
+
   res.send("OK");
 });
 
