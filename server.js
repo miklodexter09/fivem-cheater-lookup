@@ -6,7 +6,14 @@ const app = express();
 app.use(express.json());
 app.use(express.static("public"));
 
-const ADMIN_KEY = process.env.ADMIN_KEY || "Miklo2025";
+const ADMIN_KEYS = [
+  "Miklo2025",
+  "7X2K9P4M",
+  "Q8N5L3TY",
+  "R4V7J2WD",
+  "B9C6H1ZS",
+  "M3F8K5XP"
+];
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -41,7 +48,7 @@ app.get("/api/user/:id", async (req, res) => {
 app.post("/api/user/:id", async (req, res) => {
   const adminKey = req.headers["admin-key"];
 
-  if (adminKey !== ADMIN_KEY) {
+  if (!ADMIN_KEYS.includes(adminKey)) {
     return res.status(403).send("No access");
   }
 
